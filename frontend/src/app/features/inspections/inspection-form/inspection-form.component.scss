@@ -1,0 +1,6 @@
+/* На мобильных уменьшаем паддинги. */
+@media (max-width: 575.98px) {
+  .card-body {
+    padding: 0.75rem;
+  }
+}

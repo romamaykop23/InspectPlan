@@ -1,0 +1,178 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8 col-xl-7">
+
+    <!-- Заголовок и возврат к списку -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="h4 mb-0">{{ title() }}</h1>
+      <a class="btn btn-sm btn-outline-secondary" routerLink="/inspections">
+        Обратно к списку
+      </a>
+    </div>
+
+    <!-- Индикатор загрузки данных при редактировании -->
+    @if (loading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+    } @else {
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="card shadow-sm">
+          <div class="card-body">
+
+            <!-- Выбор СМП -->
+            <div class="mb-3">
+              <label class="form-label">
+                СМП <span class="text-danger">*</span>
+              </label>
+              <app-smp-autocomplete formControlName="smp_id"></app-smp-autocomplete>
+              @if (invalid('smp_id')) {
+                <div class="text-danger small mt-1">{{ errorFor('smp_id') }}</div>
+              }
+            </div>
+
+            <!-- Контролирующий орган -->
+            <div class="mb-3">
+              <label for="authority" class="form-label">
+                Контролирующий орган <span class="text-danger">*</span>
+              </label>
+              <input
+                id="authority"
+                type="text"
+                class="form-control"
+                [class.is-invalid]="invalid('authority')"
+                formControlName="authority"
+                placeholder="Например: Роспотребнадзор"
+              >
+              @if (invalid('authority')) {
+                <div class="invalid-feedback">{{ errorFor('authority') }}</div>
+              }
+            </div>
+
+            <!-- Период проверки -->
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-md-4">
+                <label for="start" class="form-label">
+                  Дата начала <span class="text-danger">*</span>
+                </label>
+                <input
+                  id="start"
+                  type="date"
+                  class="form-control"
+                  [class.is-invalid]="invalid('planned_start_date')"
+                  formControlName="planned_start_date"
+                >
+                @if (invalid('planned_start_date')) {
+                  <div class="invalid-feedback">{{ errorFor('planned_start_date') }}</div>
+                }
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label for="end" class="form-label">
+                  Дата окончания <span class="text-danger">*</span>
+                </label>
+                <input
+                  id="end"
+                  type="date"
+                  class="form-control"
+                  [class.is-invalid]="invalid('planned_end_date') || dateRangeInvalid()"
+                  formControlName="planned_end_date"
+                >
+                @if (invalid('planned_end_date')) {
+                  <div class="invalid-feedback">{{ errorFor('planned_end_date') }}</div>
+                } @else if (dateRangeInvalid()) {
+                  <div class="invalid-feedback d-block">
+                    Дата окончания не может быть раньше даты начала
+                  </div>
+                }
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label class="form-label">Длительность</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [value]="durationDays() !== null ? durationDays() + ' дн.' : '—'"
+                  readonly
+                >
+              </div>
+            </div>
+
+            <!-- Тип и статус -->
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-md-6">
+                <label for="type" class="form-label">
+                  Тип проверки <span class="text-danger">*</span>
+                </label>
+                <select
+                  id="type"
+                  class="form-select"
+                  [class.is-invalid]="invalid('inspection_type')"
+                  formControlName="inspection_type"
+                >
+                  <option value="" disabled>— выберите —</option>
+                  @for (t of types(); track t.code) {
+                    <option [value]="t.code">{{ t.label }}</option>
+                  }
+                </select>
+                @if (invalid('inspection_type')) {
+                  <div class="invalid-feedback">{{ errorFor('inspection_type') }}</div>
+                }
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label for="status" class="form-label">
+                  Статус <span class="text-danger">*</span>
+                </label>
+                <select
+                  id="status"
+                  class="form-select"
+                  [class.is-invalid]="invalid('status')"
+                  formControlName="status"
+                >
+                  <option value="" disabled>— выберите —</option>
+                  @for (s of statuses(); track s.code) {
+                    <option [value]="s.code">{{ s.label }}</option>
+                  }
+                </select>
+                @if (invalid('status')) {
+                  <div class="invalid-feedback">{{ errorFor('status') }}</div>
+                }
+              </div>
+            </div>
+
+            <!-- Результат -->
+            <div class="mb-3">
+              <label for="result" class="form-label">Результат</label>
+              <textarea
+                id="result"
+                class="form-control"
+                rows="3"
+                [class.is-invalid]="invalid('result')"
+                formControlName="result"
+                placeholder="Необязательное поле, до 1000 символов"
+              ></textarea>
+              @if (invalid('result')) {
+                <div class="invalid-feedback">{{ errorFor('result') }}</div>
+              }
+              <div class="form-text">
+                Осталось символов: {{ 1000 - (form.controls.result.value?.length ?? 0) }}
+              </div>
+            </div>
+
+          </div>
+
+          <div class="card-footer d-flex justify-content-end gap-2">
+            <a class="btn btn-outline-secondary" routerLink="/inspections">Отмена</a>
+            <button type="submit" class="btn btn-primary" [disabled]="saving()">
+              @if (saving()) {
+                <span class="spinner-border spinner-border-sm me-1"></span>
+              }
+              {{ isEdit() ? 'Сохранить' : 'Создать' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    }
+  </div>
+</div>

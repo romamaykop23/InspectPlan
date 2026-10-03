@@ -1,0 +1,15 @@
+<!-- Шапка -->
+<app-header></app-header>
+
+<!--
+  container-fluid — занимает всю ширину с небольшими отступами.
+  page-content — наш глобальный класс для отступов.
+-->
+<main class="container-fluid page-content">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Глобальные оверлеи. Живут вне <main>, чтобы не влиять на layout -->
+<app-notification-container></app-notification-container>
+<app-confirm-dialog></app-confirm-dialog>
+<app-smp-create-modal></app-smp-create-modal>

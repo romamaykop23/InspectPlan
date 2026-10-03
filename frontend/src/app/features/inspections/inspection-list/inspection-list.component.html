@@ -1,0 +1,262 @@
+<!-- Блок фильтров + кнопки действий -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <form [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+      <div class="row g-2">
+        <!-- Поиск -->
+        <div class="col-12 col-lg-4">
+          <label for="f-search" class="form-label small text-muted mb-1">Поиск</label>
+          <input
+            id="f-search"
+            type="text"
+            class="form-control"
+            formControlName="search"
+            placeholder="Наименование, ИНН, орган, результат"
+          >
+        </div>
+
+        <!-- Тип -->
+        <div class="col-6 col-lg-2">
+          <label for="f-type" class="form-label small text-muted mb-1">Тип</label>
+          <select id="f-type" class="form-select" formControlName="type">
+            <option value="">Все</option>
+            @for (t of types(); track t.code) {
+              <option [value]="t.code">{{ t.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Статус -->
+        <div class="col-6 col-lg-2">
+          <label for="f-status" class="form-label small text-muted mb-1">Статус</label>
+          <select id="f-status" class="form-select" formControlName="status">
+            <option value="">Все</option>
+            @for (s of statuses(); track s.code) {
+              <option [value]="s.code">{{ s.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Диапазон дат -->
+        <div class="col-6 col-lg-2">
+          <label for="f-from" class="form-label small text-muted mb-1">Дата от</label>
+          <input id="f-from" type="date" class="form-control" formControlName="date_from">
+        </div>
+        <div class="col-6 col-lg-2">
+          <label for="f-to" class="form-label small text-muted mb-1">Дата до</label>
+          <input id="f-to" type="date" class="form-control" formControlName="date_to">
+        </div>
+      </div>
+
+      <!-- Кнопки фильтрации -->
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <button type="submit" class="btn btn-primary">
+          Найти
+        </button>
+        <button type="button" class="btn btn-outline-secondary" (click)="resetFilters()">
+          Сбросить
+        </button>
+      </div>
+    </form>
+
+    <hr class="my-3">
+
+    <!-- Панель действий над реестром -->
+    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+      <div class="text-muted small">
+        Найдено записей: <strong>{{ total() }}</strong>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <!-- Экспорт: обычная ссылка, браузер сам скачает файл -->
+        <a class="btn btn-outline-success btn-sm" [href]="exportUrl()">
+          Экспорт в Excel
+        </a>
+
+        <!-- Скачать шаблон для импорта -->
+        <a class="btn btn-outline-secondary btn-sm" [href]="templateUrl">
+          Шаблон Excel
+        </a>
+
+        <!-- Импорт: скрытый input + кнопка -->
+        <button type="button" class="btn btn-outline-info btn-sm"
+                (click)="openImportDialog(fileInput)">
+          Импорт из Excel
+        </button>
+        <input #fileInput type="file" accept=".xlsx,.xls"
+               class="d-none" (change)="onFileSelected($event)">
+
+        <!-- Добавить проверку -->
+        <a class="btn btn-primary btn-sm" routerLink="/inspections/new">
+          Добавить проверку
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Индикатор загрузки -->
+@if (loading()) {
+  <div class="loading-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Загрузка…</span>
+    </div>
+  </div>
+}
+
+<!-- Таблица (десктоп, ≥768px) -->
+<div class="card shadow-sm d-none d-md-block">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width:60px">#</th>
+          <th role="button" (click)="changeSort('smp_name')" style="cursor:pointer">
+            СМП{{ sortIcon('smp_name') }}
+          </th>
+          <th>ИНН</th>
+          <th>Орган</th>
+          <th role="button" (click)="changeSort('planned_start_date')" style="cursor:pointer">
+            Начало{{ sortIcon('planned_start_date') }}
+          </th>
+          <th role="button" (click)="changeSort('planned_end_date')" style="cursor:pointer">
+            Окончание{{ sortIcon('planned_end_date') }}
+          </th>
+          <th class="text-center">Длит.</th>
+          <th>Тип</th>
+          <th role="button" (click)="changeSort('status')" style="cursor:pointer">
+            Статус{{ sortIcon('status') }}
+          </th>
+          <th style="width:140px" class="text-end">Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items(); track item.id; let i = $index) {
+          <tr>
+            <td>{{ (page() - 1) * perPage() + i + 1 }}</td>
+            <td class="table-cell-wrap">{{ item.smp.name }}</td>
+            <td>{{ item.smp.inn || '—' }}</td>
+            <td class="table-cell-wrap">{{ item.authority }}</td>
+            <td>{{ formatDate(item.planned_start_date) }}</td>
+            <td>{{ formatDate(item.planned_end_date) }}</td>
+            <td class="text-center">{{ item.planned_duration_days }}</td>
+            <td>{{ item.inspection_type_label }}</td>
+            <td>
+              <span class="badge" [class]="statusBadgeClass(item.status)">
+                {{ item.status_label }}
+              </span>
+            </td>
+            <td class="text-end actions-cell">
+              <a class="btn btn-sm btn-outline-primary me-1"
+                 [routerLink]="['/inspections', item.id, 'edit']"
+                 title="Редактировать">
+                ✎
+              </a>
+              <button class="btn btn-sm btn-outline-danger"
+                      type="button"
+                      (click)="deleteItem(item)"
+                      title="Удалить">
+                🗑
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="10" class="text-center text-muted py-5">
+              Ничего не найдено
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Карточки (мобильный, <768px) -->
+<div class="d-md-none">
+  @for (item of items(); track item.id; let i = $index) {
+    <div class="card shadow-sm mb-2">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div class="fw-semibold pe-2">{{ item.smp.name }}</div>
+          <span class="badge flex-shrink-0" [class]="statusBadgeClass(item.status)">
+            {{ item.status_label }}
+          </span>
+        </div>
+        <div class="small text-muted mb-2">ИНН: {{ item.smp.inn || '—' }}</div>
+
+        <div class="small mb-1">
+          <strong>Орган:</strong> {{ item.authority }}
+        </div>
+        <div class="small mb-1">
+          <strong>Период:</strong>
+          {{ formatDate(item.planned_start_date) }} — {{ formatDate(item.planned_end_date) }}
+          ({{ item.planned_duration_days }} дн.)
+        </div>
+        <div class="small mb-3">
+          <strong>Тип:</strong> {{ item.inspection_type_label }}
+        </div>
+
+        <div class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-primary flex-grow-1"
+             [routerLink]="['/inspections', item.id, 'edit']">
+            Редактировать
+          </a>
+          <button class="btn btn-sm btn-outline-danger flex-grow-1"
+                  type="button"
+                  (click)="deleteItem(item)">
+            Удалить
+          </button>
+        </div>
+      </div>
+    </div>
+  } @empty {
+    <div class="card shadow-sm">
+      <div class="card-body text-center text-muted py-4">
+        Ничего не найдено
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Пагинация -->
+@if (lastPage() > 1) {
+  <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2">
+    <div class="small text-muted">
+      Страница {{ page() }} из {{ lastPage() }} (всего {{ total() }})
+    </div>
+
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" [class.disabled]="page() === 1">
+          <button class="page-link" (click)="goToPage(page() - 1)">‹</button>
+        </li>
+
+        @for (p of pageNumbers(); track p; let idx = $index) {
+          @if (idx > 0 && needsEllipsis(pageNumbers()[idx - 1], p)) {
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          }
+          <li class="page-item" [class.active]="p === page()">
+            <button class="page-link" (click)="goToPage(p)">{{ p }}</button>
+          </li>
+        }
+
+        <li class="page-item" [class.disabled]="page() === lastPage()">
+          <button class="page-link" (click)="goToPage(page() + 1)">›</button>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="d-flex align-items-center gap-2 small">
+      <label for="per-page" class="text-muted mb-0">На странице:</label>
+      <select id="per-page" class="form-select form-select-sm"
+              style="width:auto"
+              [value]="perPage()"
+              (change)="changePerPage($event)">
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+  </div>
+}

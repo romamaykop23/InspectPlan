@@ -1,0 +1,64 @@
+<!-- Autocomplete — это input + выпадающий список под ним -->
+<div class="smp-autocomplete">
+  <div class="input-group">
+    <input
+      type="text"
+      class="form-control"
+      [formControl]="searchControl"
+      (focus)="onFocus()"
+      placeholder="Начните вводить название или ИНН"
+      autocomplete="off"
+    >
+
+    <!-- Кнопка очистки показывается только если что-то выбрано -->
+    @if (selectedId() !== null) {
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="clearSelection()"
+        title="Очистить"
+      >×</button>
+    }
+
+    <!-- Кнопка «Создать СМП» — родитель решает, показывать ли её -->
+    @if (allowCreate()) {
+      <button
+        type="button"
+        class="btn btn-outline-primary"
+        (click)="openCreateDialog()"
+        title="Создать нового СМП"
+      >+ СМП</button>
+    }
+  </div>
+
+  <!-- Спиннер загрузки справа от поля -->
+  @if (loading()) {
+    <div class="text-muted small mt-1">
+      <span class="spinner-border spinner-border-sm me-1"></span> Поиск…
+    </div>
+  }
+
+  <!-- Дропдаун с результатами -->
+  @if (opened() && options().length > 0) {
+    <ul class="smp-autocomplete__dropdown list-group shadow-sm">
+      @for (smp of options(); track smp.id) {
+        <li
+          class="list-group-item list-group-item-action smp-autocomplete__item"
+          (click)="selectOption(smp)"
+        >
+          <div class="fw-semibold">{{ smp.name }}</div>
+          @if (smp.inn) {
+            <div class="small text-muted">ИНН {{ smp.inn }}</div>
+          }
+        </li>
+      }
+    </ul>
+  }
+
+  <!-- Подсказка, когда ничего не найдено только если юзер что-то ввёл -->
+  @if (opened() && !loading() && searchControl.value.trim().length >= 2 && options().length === 0) {
+    <div class="alert alert-light border mt-1 mb-0 py-2 small">
+      Ничего не найдено. При необходимости создайте нового СМП.
+    </div>
+  }
+</div>

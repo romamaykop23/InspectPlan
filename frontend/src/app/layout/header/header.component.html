@@ -1,0 +1,38 @@
+<!--  Верхняя навигационная панель приложения -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <div class="container-fluid">
+    <!-- Логотип/название. Ссылка ведёт на список проверок -->
+    <a class="navbar-brand fw-bold" routerLink="/inspections">
+      Перечень плановых проверок
+    </a>
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#mainNavbar"
+      aria-controls="mainNavbar"
+      aria-expanded="false"
+      aria-label="Переключить навигацию"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Сворачиваемое меню -->
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            routerLink="/inspections"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: false }"
+            (click)="onNavClick($event)"
+          >
+            Проверки
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

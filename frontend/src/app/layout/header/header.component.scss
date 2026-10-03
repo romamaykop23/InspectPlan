@@ -1,0 +1,11 @@
+/* Прижимаем navbar-brand к левому краю */
+.navbar-brand {
+  font-size: 1.1rem;
+}
+
+/* На мобильных уменьшаем размер шрифта в навигации */
+@media (max-width: 576px) {
+  .navbar-brand {
+    font-size: 0.95rem;
+  }
+}
