@@ -47,7 +47,7 @@ docker compose exec php php spark migrate
 docker compose exec php php spark db:seed DatabaseSeeder
 
 # 6. Откройте приложение
-# http://localhost:8080
+ http://localhost:8080
 ```
 
 > **PowerShell-версия** (для Windows):
@@ -65,12 +65,12 @@ docker compose exec php php spark db:seed DatabaseSeeder
 | -------------- | ---- |
 | Приложение     | 8080 |
 | PostgreSQL     | 5432 |
-| Admin (debug)  | 8081 |
+| Adminer (debug)| 8081 |
 
-Admin запускается только в профиле `debug`:
+Adminer, легковесная веб-панель для управления базами данных, запускается только в профиле `debug`:
 
 ```bash
-docker compose --profile debug up -d admin
+docker compose --profile debug up -d adminer
 ```
 
 ## Полезные команды
@@ -81,7 +81,7 @@ make down         # остановить всё
 make logs         # смотреть логи
 make migrate      # накатить миграции
 make fresh        # пересоздать схему + сиды
-make admin        # запустить admin
+make adminer      # запустить adminer
 ```
 
 ## Документация
@@ -121,7 +121,7 @@ make admin        # запустить admin
 | Переменная    | Значение по умолчанию | Назначение               |
 | ------------- | --------------------- | ------------------------ |
 | `APP_PORT`    | 8080                  | Наружный порт приложения |
-| `ADMIN_PORT`  | 8081                  | Порт Admin               |
+| `ADMINER_PORT`| 8081                  | Порт Adminer             |
 | `DB_PORT`     | 5432                  | Порт PostgreSQL          |
 | `DB_NAME`     | smp                   | Имя базы                 |
 | `DB_USER`     | smp                   | Пользователь БД          |

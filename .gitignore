@@ -1,17 +1,34 @@
 .env
+.env.local
+.env.*.local
 docker-compose.override.yml
+
 .DS_Store
+Thumbs.db
+Desktop.ini
+
 *.log
+logs/
 
 # Backend
 backend/vendor/
-backend/writable/
+backend/writable/*
+!backend/writable/.gitkeep
 backend/.env
+backend/.phpunit.cache/
+backend/.phpunit.result.cache
 
 # Frontend
 frontend/node_modules/
 frontend/dist/
 frontend/.angular/
+frontend/coverage/
+
+# General
+node_modules/
+vendor/
+dist/
+build/
 
 # IDE
 .idea/
